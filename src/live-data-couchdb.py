@@ -13,12 +13,10 @@ from opcua.ua.uaerrors import _auto
 from opcua import Client
 
 exit_flag = False
-
 def signal_handler(signal, frame):
     print("CTRL+C detected, setting exit flag.")
     global exit_flag
     exit_flag = True
-
 signal.signal(signal.SIGINT, signal_handler)
 
 couchdb_url = "http://localhost:5984"
@@ -51,7 +49,8 @@ machine_state_submodel_reference = model.ModelReference(
 )
 
 machine_state_submodel = machine_state_submodel_reference.resolve(couchdb_object_store)
-print(machine_state_submodel.get_referable("quetschwalze_1_drehzahl_m_min").)
+print(machine_state_submodel)
+# print(machine_state_submodel.get_referable("quetschwalze_1_drehzahl_m_min").)
 
 property_reference = model.ModelReference(
            (model.Key(
@@ -84,6 +83,8 @@ while not exit_flag:
     try:
         # TODO: Consider renaming properties in submodel to the same as OPC UA server so that all properties can be iterated over and fetched without manually specifying them all
         # TODO: Put this into separate functions
+        # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
+        # TODO: Implement logger and replace all print statements
         opc_ua_property_name = "quetschwalze_1_drehzddahl"
         opc_ua_property_value = root.get_child(["0:Objects", "2:machine1", f"2:{opc_ua_property_name}"]).get_value()
         print(f"{opc_ua_property_name} value is:", opc_ua_property_value)
