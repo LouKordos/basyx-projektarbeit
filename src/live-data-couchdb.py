@@ -39,15 +39,25 @@ with aasx.AASXReader("../machine1_speiser.aasx") as reader:
     reader.read_into(object_store=couchdb_object_store,
                      file_store=file_store)
     
-# with aasx.AASXReader("../machine2_krempel.aasx") as reader:
-#     # Read all contained AAS objects and all referenced auxiliary files
-#     reader.read_into(object_store=couchdb_object_store,
-#                         file_store=file_store)
+with aasx.AASXReader("../machine2_krempel.aasx") as reader:
+    # Read all contained AAS objects and all referenced auxiliary files
+    reader.read_into(object_store=couchdb_object_store,
+                        file_store=file_store)
     
-# with aasx.AASXReader("../machine2_leger.aasx") as reader:
-#     # Read all contained AAS objects and all referenced auxiliary files
-#     reader.read_into(object_store=couchdb_object_store,
-#                         file_store=file_store)
+with aasx.AASXReader("../machine3_leger.aasx") as reader:
+    # Read all contained AAS objects and all referenced auxiliary files
+    reader.read_into(object_store=couchdb_object_store,
+                        file_store=file_store)
+
+client = Client("opc.tcp://localhost:4840/freeopcua/server/")
+# client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
+client.connect()
+
+# Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
+root = client.get_root_node()
+print("Objects node of OPCUA is: ", root)
+# Node objects have methods to read and write node attributes as well as browse or populate address space
+print("Children of OPCUA root are: ", root.get_children())
 
 def set_submodel_property_value(submodel_id, property_name, value):
     machine_state_submodel = couchdb_object_store.get_identifiable(submodel_id)
@@ -60,16 +70,6 @@ def get_submodel_property_value(submodel_id, property_name):
     machine_state_submodel = couchdb_object_store.get_identifiable(submodel_id)
     machine_state_submodel.update()
     return machine_state_submodel.get_referable(property_name).value
-
-client = Client("opc.tcp://localhost:4840/freeopcua/server/")
-# client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
-client.connect()
-
-# Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
-root = client.get_root_node()
-print("Objects node of OPCUA is: ", root)
-# Node objects have methods to read and write node attributes as well as browse or populate address space
-print("Children of OPCUA root are: ", root.get_children())
 
 while not exit_flag:
     before = time.time()
