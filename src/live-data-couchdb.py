@@ -6,9 +6,12 @@ import basyx.aas.examples.data.example_aas
 import basyx.aas.backend.couchdb
 from basyx.aas import model
 from basyx.aas.adapter import aasx
+import basyx.aas.model
+import basyx.aas.util.identification
 
 # needed for OPC UA client
 sys.path.insert(0, "..")
+import basyx.aas.util
 from opcua.ua.uaerrors import _auto
 from opcua import Client
 
@@ -48,6 +51,40 @@ with aasx.AASXReader("../machine3_leger.aasx") as reader:
     # Read all contained AAS objects and all referenced auxiliary files
     reader.read_into(object_store=couchdb_object_store,
                         file_store=file_store)
+    
+from typing import List, Union
+from basyx.aas.model import Submodel, SubmodelElement, Property, SubmodelElementCollection, SubmodelElementList, Entity, AnnotatedRelationshipElement, Operation
+
+def get_properties(element: SubmodelElement) -> List[Property]:
+    properties = []
+    if isinstance(element, Property):
+        properties.append(element)
+    elif isinstance(element, SubmodelElementCollection):
+        for sub_element in element.value:
+            properties.extend(get_properties(sub_element))
+    elif isinstance(element, SubmodelElementList):
+        for sub_element in element.value:
+            properties.extend(get_properties(sub_element))
+    elif isinstance(element, Entity):
+        for statement in element.statement:
+            properties.extend(get_properties(statement))
+    elif isinstance(element, AnnotatedRelationshipElement):
+        for annotation in element.annotation:
+            properties.extend(get_properties(annotation))
+    elif isinstance(element, Operation):
+        for input_variable in element.input_variable:
+            properties.extend(get_properties(input_variable))
+        for output_variable in element.output_variable:
+            properties.extend(get_properties(output_variable))
+        for in_output_variable in element.in_output_variable:
+            properties.extend(get_properties(in_output_variable))
+    return properties
+
+def get_all_submodel_properties(submodel: Submodel) -> List[Property]:
+    all_properties = []
+    for element in submodel.submodel_element:
+        all_properties.extend(get_properties(element))
+    return all_properties
 
 client = Client("opc.tcp://localhost:4840/freeopcua/server/")
 # client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
@@ -71,6 +108,13 @@ def get_submodel_property_value(submodel_id, property_name):
     machine_state_submodel.update()
     return machine_state_submodel.get_referable(property_name).value
 
+def get_opc_ua_property_value(property_name):
+    try:
+        return root.get_child(["0:Objects", "2:machine1", f"2:{property.id_short}"]).get_value()
+    except Exception as e:
+        print(f"Error occured while trying to get {property_name} value from OPC UA server, skipping:", e)
+        return None
+
 while not exit_flag:
     before = time.time()
     try:
@@ -79,16 +123,16 @@ while not exit_flag:
         # TODO: Put this into separate functions
         # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
         # TODO: Implement logger and replace all print statements
-        opc_ua_property_name = "quetschwalze_1_drehzahl"
-        opc_ua_property_value = root.get_child(["0:Objects", "2:machine1", f"2:{opc_ua_property_name}"]).get_value()
-        print(f"{opc_ua_property_name} value is:", opc_ua_property_value)
+        for property in get_all_submodel_properties(couchdb_object_store.get_identifiable("https://ita.rwth-aachen.de/machine1_speiser/machine_state")):
+            opc_ua_value = get_opc_ua_property_value(property_name=property.id_short)
+            if opc_ua_value != None:
+                set_submodel_property_value(submodel_id="https://ita.rwth-aachen.de/machine1_speiser/machine_state", property_name=property.id_short, value=opc_ua_value)
+                print(get_submodel_property_value(submodel_id="https://ita.rwth-aachen.de/machine1_speiser/machine_state", property_name=property.id_short))
 
-        set_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min", opc_ua_property_value)
-        print(get_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min"))
-    except _auto.BadNoMatch as e:
-        print(f"Property={opc_ua_property_name} was not found on OPC UA server, skipping:", e)
+        # set_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min", opc_ua_property_value)
+        # print(get_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min"))
     except Exception as e:
-        print("Exception caught, exiting:", e)
+        print("Exception caught in main loop, exiting:", e)
         exit_flag = True
 
     after = time.time()

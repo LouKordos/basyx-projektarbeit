@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # populating address space
     machine1 = objects.add_object(idx, "machine1")
-    quetschwalze_1_drehzahl = machine1.add_variable(idx, "quetschwalze_1_drehzahl", 6.7)
+    quetschwalze_1_drehzahl = machine1.add_variable(idx, "quetschwalze_1_drehzahl_m_min", 6.7)
     quetschwalze_1_drehzahl.set_writable() # Set MyVariable to be writable by clients
 
     server.start()
