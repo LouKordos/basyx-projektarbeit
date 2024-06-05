@@ -123,7 +123,6 @@ while not exit_flag:
     before = time.time()
     try:
         # Read data from OPC UA, write it to the CouchDB Submodel Object store and commit the changes.
-        # TODO: Put this into separate functions
         # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
         # TODO: Implement logger and replace all print statements
 
@@ -132,7 +131,7 @@ while not exit_flag:
                 opc_ua_value = get_opc_ua_property_value(property_name=property.id_short)
                 if opc_ua_value != None:
                     set_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short, value=opc_ua_value)
-                    print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
+                    # print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
 
     except Exception as e:
         print("Exception caught in main loop, exiting:", e)
