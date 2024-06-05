@@ -8,10 +8,12 @@ from basyx.aas import model
 from basyx.aas.adapter import aasx
 import basyx.aas.model
 import basyx.aas.util.identification
+from basyx.aas.util.traversal import walk_submodel
+import basyx.aas.util
+from typing import List
 
 # needed for OPC UA client
 sys.path.insert(0, "..")
-import basyx.aas.util
 from opcua.ua.uaerrors import _auto
 from opcua import Client
 
@@ -53,45 +55,13 @@ with aasx.AASXReader(f"../{machine_names[2]}.aasx") as reader:
     # Read all contained AAS objects and all referenced auxiliary files
     reader.read_into(object_store=couchdb_object_store,
                         file_store=file_store)
-    
-from typing import List, Union
-from basyx.aas.model import Submodel, SubmodelElement, Property, SubmodelElementCollection, SubmodelElementList, Entity, AnnotatedRelationshipElement, Operation
 
-def get_properties(element: SubmodelElement) -> List[Property]:
-    properties = []
-    if isinstance(element, Property):
-        properties.append(element)
-    elif isinstance(element, SubmodelElementCollection):
-        for sub_element in element.value:
-            properties.extend(get_properties(sub_element))
-    elif isinstance(element, SubmodelElementList):
-        for sub_element in element.value:
-            properties.extend(get_properties(sub_element))
-    elif isinstance(element, Entity):
-        for statement in element.statement:
-            properties.extend(get_properties(statement))
-    elif isinstance(element, AnnotatedRelationshipElement):
-        for annotation in element.annotation:
-            properties.extend(get_properties(annotation))
-    elif isinstance(element, Operation):
-        for input_variable in element.input_variable:
-            properties.extend(get_properties(input_variable))
-        for output_variable in element.output_variable:
-            properties.extend(get_properties(output_variable))
-        for in_output_variable in element.in_output_variable:
-            properties.extend(get_properties(in_output_variable))
-    return properties
-
-def get_all_submodel_properties(submodel: Submodel) -> List[Property]:
-    all_properties = []
-    for element in submodel.submodel_element:
-        all_properties.extend(get_properties(element))
-    return all_properties
+def get_all_submodel_properties(submodel: model.Submodel) -> List[model.Property]:
+    return [submodel_element for submodel_element in walk_submodel(submodel) if isinstance(submodel_element, model.Property)]
 
 client = Client("opc.tcp://localhost:4840/freeopcua/server/")
 # client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
 client.connect()
-
 # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
 root = client.get_root_node()
 print("Objects node of OPCUA is: ", root)
