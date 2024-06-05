@@ -83,8 +83,8 @@ while not exit_flag:
         opc_ua_property_value = root.get_child(["0:Objects", "2:machine1", f"2:{opc_ua_property_name}"]).get_value()
         print(f"{opc_ua_property_name} value is:", opc_ua_property_value)
 
-        set_submodel_property_value("https://ita.rwth-aachen.de/machine-state-submodel", "quetschwalze_1_drehzahl_m_min", opc_ua_property_value)
-        # print(get_submodel_property_value("https://ita.rwth-aachen.de/machine-state-submodel", "quetschwalze_1_drehzahl_m_min"))
+        set_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min", opc_ua_property_value)
+        print(get_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min"))
     except _auto.BadNoMatch as e:
         print(f"Property={opc_ua_property_name} was not found on OPC UA server, skipping:", e)
     except Exception as e:
