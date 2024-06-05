@@ -37,17 +37,19 @@ couchdb_object_store = basyx.aas.backend.couchdb.CouchDBObjectStore(couchdb_url,
 # For reading auxiliary files, should not be needed in this case
 file_store = aasx.DictSupplementaryFileContainer()
 
-with aasx.AASXReader("../machine1_speiser.aasx") as reader:
+machine_names = ["machine1_speiser","machine2_krempel","machine3_leger"]
+
+with aasx.AASXReader(f"../{machine_names[0]}.aasx") as reader:
     # Read all contained AAS objects and all referenced auxiliary files
     reader.read_into(object_store=couchdb_object_store,
                      file_store=file_store)
     
-with aasx.AASXReader("../machine2_krempel.aasx") as reader:
+with aasx.AASXReader(f"../{machine_names[1]}.aasx") as reader:
     # Read all contained AAS objects and all referenced auxiliary files
     reader.read_into(object_store=couchdb_object_store,
                         file_store=file_store)
     
-with aasx.AASXReader("../machine3_leger.aasx") as reader:
+with aasx.AASXReader(f"../{machine_names[2]}.aasx") as reader:
     # Read all contained AAS objects and all referenced auxiliary files
     reader.read_into(object_store=couchdb_object_store,
                         file_store=file_store)
@@ -114,6 +116,8 @@ def get_opc_ua_property_value(property_name):
     except Exception as e:
         print(f"Error occured while trying to get {property_name} value from OPC UA server, skipping:", e)
         return None
+    
+LOOP_FREQUENCY = 10 # Hz
 
 while not exit_flag:
     before = time.time()
@@ -123,20 +127,20 @@ while not exit_flag:
         # TODO: Put this into separate functions
         # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
         # TODO: Implement logger and replace all print statements
-        for property in get_all_submodel_properties(couchdb_object_store.get_identifiable("https://ita.rwth-aachen.de/machine1_speiser/machine_state")):
-            opc_ua_value = get_opc_ua_property_value(property_name=property.id_short)
-            if opc_ua_value != None:
-                set_submodel_property_value(submodel_id="https://ita.rwth-aachen.de/machine1_speiser/machine_state", property_name=property.id_short, value=opc_ua_value)
-                print(get_submodel_property_value(submodel_id="https://ita.rwth-aachen.de/machine1_speiser/machine_state", property_name=property.id_short))
 
-        # set_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min", opc_ua_property_value)
-        # print(get_submodel_property_value("https://ita.rwth-aachen.de/machine1_speiser/machine_state", "quetschwalze_1_drehzahl_m_min"))
+        for machine_name in machine_names:
+            for property in get_all_submodel_properties(couchdb_object_store.get_identifiable(f"https://ita.rwth-aachen.de/{machine_name}/machine_state")):
+                opc_ua_value = get_opc_ua_property_value(property_name=property.id_short)
+                if opc_ua_value != None:
+                    set_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short, value=opc_ua_value)
+                    print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
+
     except Exception as e:
         print("Exception caught in main loop, exiting:", e)
         exit_flag = True
 
     after = time.time()
     print(f"Iteration time: {(after - before)*1000.0}ms")
-    time.sleep(max(0, 0.1 - (after - before))) # Make loop run at roughly 100Hz
+    time.sleep(max(0, 1/LOOP_FREQUENCY - (after - before))) # Make loop run at roughly LOOP_FREQUENCY
 
 client.disconnect()
