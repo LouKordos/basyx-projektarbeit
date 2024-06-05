@@ -123,7 +123,6 @@ while not exit_flag:
     before = time.time()
     try:
         # Read data from OPC UA, write it to the CouchDB Submodel Object store and commit the changes.
-        # TODO: Consider renaming properties in submodel to the same as OPC UA server so that all properties can be iterated over and fetched without manually specifying them all
         # TODO: Put this into separate functions
         # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
         # TODO: Implement logger and replace all print statements
@@ -142,5 +141,6 @@ while not exit_flag:
     after = time.time()
     print(f"Iteration time: {(after - before)*1000.0}ms")
     time.sleep(max(0, 1/LOOP_FREQUENCY - (after - before))) # Make loop run at roughly LOOP_FREQUENCY
+
 
 client.disconnect()
