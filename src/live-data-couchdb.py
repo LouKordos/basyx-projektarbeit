@@ -76,7 +76,7 @@ print("Children of OPCUA root are: ", root.get_children())
 def set_submodel_property_value(submodel_id, property_name, value):
     machine_state_submodel = couchdb_object_store.get_identifiable(submodel_id)
     machine_state_submodel.update()
-    machine_state_submodel.get_referable(property_name).value = value
+    machine_state_submodel.get_referable(property_name).value = float(value)
     machine_state_submodel.get_referable(property_name).commit()
     machine_state_submodel.update()
 
@@ -109,7 +109,7 @@ while not exit_flag:
                     # print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
 
     except Exception as e:
-        print("Exception caught in main loop, exiting:", e)
+        print("Exception caught in main loop, exiting:", e.format_exc())
         exit_flag = True
 
     after = time.time()
