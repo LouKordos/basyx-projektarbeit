@@ -80,12 +80,15 @@ def get_submodel_property_value(submodel_id, property_name):
     machine_state_submodel.update()
     return machine_state_submodel.get_referable(property_name).value
 
-def get_opc_ua_property_value(property_name):
+def get_opc_ua_property_value(machine_name, property_name):
     try:
-        return root.get_child(["0:Objects", "2:machine1", f"2:{property.id_short}"]).get_value()
+        return root.get_child(["0:Objects", "0:Prozess", f"0:{machine_name}", f"0:{property_name}"]).get_value()
     except Exception as e:
-        print(f"Error occured while trying to get {property_name} value from OPC UA server, skipping:", e)
+        print(f"Error occured while trying to get {property_name} value from machine_name={machine_name} from OPC UA server, skipping:", e)
         return None
+    
+def get_opc_ua_machine_name(name):
+    return name.split("_")[1].title()
     
 LOOP_FREQUENCY = 10 # Hz
 
@@ -98,7 +101,7 @@ while not exit_flag:
 
         for machine_name in machine_names:
             for property in get_all_submodel_properties(couchdb_object_store.get_identifiable(f"https://ita.rwth-aachen.de/{machine_name}/machine_state")):
-                opc_ua_value = get_opc_ua_property_value(property_name=property.id_short)
+                opc_ua_value = get_opc_ua_property_value(machine_name=get_opc_ua_machine_name(machine_name), property_name=property.id_short)
                 if opc_ua_value != None:
                     set_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short, value=opc_ua_value)
                     # print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
@@ -110,6 +113,5 @@ while not exit_flag:
     after = time.time()
     print(f"Iteration time: {(after - before)*1000.0}ms")
     time.sleep(max(0, 1/LOOP_FREQUENCY - (after - before))) # Make loop run at roughly LOOP_FREQUENCY
-
 
 client.disconnect()
