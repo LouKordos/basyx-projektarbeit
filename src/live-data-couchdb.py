@@ -27,7 +27,7 @@ signal.signal(signal.SIGINT, signal_handler)
 couchdb_url = "http://localhost:5984"
 couchdb_database = "basyx-test-db"
 couchdb_user = "admin"
-couchdb_password = "iNMkk3idV5fHPmoKycEsoZ84zHjYQftXxhqW6qbBYdCJ2GFg7pYZm4MMdbHg"
+couchdb_password = "admin"
 
 # Provide the login credentials to the CouchDB backend.
 # These credentials are used whenever communication with this CouchDB server is required either via the
@@ -64,7 +64,7 @@ def get_opc_ua_machine_name(name):
 
 print(get_opc_ua_machine_name(machine_names[0]))
 
-client = Client("opc.tcp://localhost:4840/freeopcua/server/")
+client = Client("opc.tcp://localhost:49580/")
 # client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
 client.connect()
 # Client has a few methods to get proxy to UA nodes that should always be in address space such as Root or Objects
