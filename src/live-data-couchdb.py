@@ -104,6 +104,7 @@ while not exit_flag:
         for machine_name in machine_names:
             for property in get_all_submodel_properties(couchdb_object_store.get_identifiable(f"https://ita.rwth-aachen.de/{machine_name}/machine_state")):
                 opc_ua_value = get_opc_ua_property_value(machine_name=get_opc_ua_machine_name(machine_name), property_name=property.id_short)
+                print(f"machine_name={machine_name}, property_name={property.id_short}, value={opc_ua_value}")
                 if opc_ua_value != None:
                     set_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short, value=opc_ua_value)
                     # print(get_submodel_property_value(submodel_id=f"https://ita.rwth-aachen.de/{machine_name}/machine_state", property_name=property.id_short))
