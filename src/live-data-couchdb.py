@@ -59,6 +59,11 @@ with aasx.AASXReader(f"../{machine_names[2]}.aasx") as reader:
 def get_all_submodel_properties(submodel: model.Submodel) -> List[model.Property]:
     return [submodel_element for submodel_element in walk_submodel(submodel) if isinstance(submodel_element, model.Property)]
 
+def get_opc_ua_machine_name(name):
+    return name.split("_")[1].title()
+
+print(get_opc_ua_machine_name(machine_names[0]))
+
 client = Client("opc.tcp://localhost:4840/freeopcua/server/")
 # client = Client("opc.tcp://admin@localhost:4840/freeopcua/server/") #connect using a user
 client.connect()
@@ -86,9 +91,6 @@ def get_opc_ua_property_value(machine_name, property_name):
     except Exception as e:
         print(f"Error occured while trying to get {property_name} value from machine_name={machine_name} from OPC UA server, skipping:", e)
         return None
-    
-def get_opc_ua_machine_name(name):
-    return name.split("_")[1].title()
     
 LOOP_FREQUENCY = 10 # Hz
 
