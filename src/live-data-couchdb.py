@@ -92,15 +92,12 @@ def get_opc_ua_property_value(machine_name, property_name):
         print(f"Error occured while trying to get {property_name} value from machine_name={machine_name} from OPC UA server, skipping:", e)
         return None
     
-LOOP_FREQUENCY = 10 # Hz
+LOOP_FREQUENCY = 1 # Hz
 
 while not exit_flag:
     before = time.time()
     try:
         # Read data from OPC UA, write it to the CouchDB Submodel Object store and commit the changes.
-        # TODO: One class for each machine, standardized to avoid rewriting code, write pseudocode first to plan
-        # TODO: Implement logger and replace all print statements
-
         for machine_name in machine_names:
             for property in get_all_submodel_properties(couchdb_object_store.get_identifiable(f"https://ita.rwth-aachen.de/{machine_name}/machine_state")):
                 opc_ua_value = get_opc_ua_property_value(machine_name=get_opc_ua_machine_name(machine_name), property_name=property.id_short)
