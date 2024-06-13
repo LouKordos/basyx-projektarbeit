@@ -126,6 +126,7 @@ celerybeat.pid
 .venv
 env/
 basyx-venv/
+basyx-venv
 ENV/
 env.bak/
 venv.bak/
