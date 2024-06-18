@@ -18,4 +18,4 @@ Um die Performance für größere Submodels zu verbessern, sollte der neue Pytho
 # Installing and Running:
 
 First, create a venv and install the required libraries as specified in `requirements.txt`, then activate the venv. To avoid outdated instructions, please google how to do that.
-Then simply adjust the CouchDB credentials, `.aasx` file names and the OPC UA connection string in `src/live-data-couchdb.py` and run it (*in the venv!*).
+Then simply adjust the CouchDB credentials, `.aasx` file names and the OPC UA connection string in `src/live-data-couchdb.py`, enter the `src` directory (`cd src/`) and run it (*in the venv!*): `python3 live-data-couchdb.py`. The aasx files are in the parent directory of `src/`, that is why you need to run it from in there.
